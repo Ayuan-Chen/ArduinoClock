@@ -1,52 +1,56 @@
 #include <MsTimer2.h>
+#include <stdint.h>
 #include <LiquidCrystal.h>
 
 const int rs = 8, rw = 11, en = 9 , d4 = 4, d5 = 5, d6 = 6, d7 = 7;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+int Sec=53,Min=59,Hour=23,Day=28,Month=2,Year=2021;  //默认时间2021-2-28 23：59：55
+int i=9,j=0;
+int StaDay=0;
+
+int adc_key_val[5]={30,150,360,535,760};   
+int NUM_KEYS=5;
+int adc_key_in;
+int key=-1;
+int ChoosePat=0;
 
 
-int Sec=53,Min=59,Hour=23,Day=28,Month=2,Year=2021;       //默认时间2021-2-28 23：59：55
-int i=9,j=0;    //控制滚动字幕
-int StaDay=0;   //标准日期
+
 
 void timer0()
 {
    Sec++;
 }
-
-
 void setup(){
    MsTimer2::set(1000,timer0) ;
    MsTimer2::start();
+   pinMode(13, OUTPUT);
    lcd.begin(16,2);
    lcd.clear();
 }
 
 
 void timeRun(){
-
-/*Display第一行*/
   lcd.setCursor(0,0);
 
-//年份
-  lcd.print(Year);    
+  lcd.print(Year);
   lcd.print("-");
   
-
-//月份
   if(Month>12){
     Month=1;
     Year++;
   }
-  if(Month<10){
+  if(Month<10&&Month>0){
     lcd.print("0");
     lcd.print(Month);
+  }else if(Month<=0){
+    lcd.print("01");
   }else{
     lcd.print(Month);
   }
   lcd.print("-");
   
-  //日期
+  
   if(Month != 2){     
         switch(Month){       
             case 1: case 3: case 5: case 7: case 8: case 10: case 12: StaDay= 31;  break;
@@ -64,77 +68,79 @@ void timeRun(){
     Day=1;
     Month++;
   }
-  if(Day<10){
+  if(Day<10&&Day>0){
     lcd.print("0");
     lcd.print(Day);
+  }else if(Day<=0){
+    lcd.print("01");
   }else{
     lcd.print(Day);
   }
   lcd.print(" ");
 
 
-//星期
-int week = (Day+2*Month+3*(Month+1)/5+Year+Year/4-Year/100+Year/400)%7+1; 
-String weekstr = "";
-switch(week){     
-        case 1: weekstr = "Mon. ";   break;
-        case 2: weekstr = "Tues. ";  break;
-        case 3: weekstr = "Wed. ";   break;
-        case 4: weekstr = "Thur. ";  break;
-        case 5: weekstr = "Fri. ";   break;
-        case 6: weekstr = "Sat. ";   break;
-        case 7: weekstr = "Sun. ";   break;
- }    
- lcd.setCursor(11, 0);  lcd.print(weekstr);
+    int week = (Day+2*Month+3*(Month+1)/5+Year+Year/4-Year/100+Year/400)%7+1; 
+    String weekstr = "";
+    switch(week){     
+        case 1: weekstr = "Mon.";   break;
+        case 2: weekstr = "Tue.";  break;
+        case 3: weekstr = "Wed.";   break;
+        case 4: weekstr = "Thu.";  break;
+        case 5: weekstr = "Fri.";   break;
+        case 6: weekstr = "Sat.";   break;
+        case 7: weekstr = "Sun.";   break;
+    }    
+    lcd.setCursor(11, 0);  lcd.print(weekstr);
   
-/*Display第二行*/
-lcd.setCursor(0,1);
+  lcd.setCursor(0,1);
 
   
-//小时
-  if(Hour==24){
+  if(Hour>=24){
     Hour=0;
     Day++;
   }
-  if(Hour<10){
+  if(Hour<10&&Hour>0){
     lcd.print("0");
     lcd.print(Hour);
+  }else if(Hour<=0){
+    lcd.print("00");
   }else{
     lcd.print(Hour);
   }
   lcd.print(":");
 
-//分钟
-  if(Min==60){
+  if(Min>=60){
     Min=0;
     Hour++;
    }
-   if(Min<10){
+   if(Min<10&&Min>0){
     lcd.print("0");
     lcd.print(Min);
+  }else if(Min<=0){
+    lcd.print("00");
   }else{
     lcd.print(Min);
   }
   lcd.print(":");
 
-
-//秒钟
-  if(Sec==60){
+  if(Sec>=60){
     Sec=0;
     Min++;
    }
-   if(Sec<10){
+   if(Sec<10&&Sec>0){
     lcd.print("0");
     lcd.print(Sec);
+  }else if(Sec<=0){
+    lcd.print("00");
   }else{
     lcd.print(Sec);
   }
  
 }
 
-//滚动字幕
-void CircleChara(){
-  if(j%200==0){
+
+void CircleChara1(){
+  if(j%10==0){
   lcd.setCursor(8,1);
   lcd.print("          ");
   lcd.setCursor(i,1);
@@ -148,7 +154,79 @@ void CircleChara(){
 }
 
 
+int get_key(uint32_t input)
+{
+  int k;
+  for(k=0;k<NUM_KEYS;k++)
+  {
+    if(input<adc_key_val[k])
+    {
+      return k;  
+    }
+  }
+  if(k>=NUM_KEYS)
+  {
+    k=-1;
+  }
+  return k;
+}
+
+void ShowPat(){
+  if(ChoosePat>2){
+     ChoosePat=0;
+  }
+  lcd.setCursor(15,0);
+  lcd.print(ChoosePat);
+}
+
+void SetTime(){
+
+  adc_key_in=analogRead(0);
+  digitalWrite(13, HIGH);
+  key=get_key(adc_key_in);
+
+  delay(100);  
+  
+  if(key==4){
+    if(ChoosePat>2){
+     ChoosePat=0;
+    }else{
+    ChoosePat++;
+   }
+  }else{
+  if(ChoosePat==0){
+  switch(key){     
+        case 0: Sec++;break;
+        case 1: Day++;break;
+        case 2: if(Day>0)Day--;;break;
+        case 3: if(Sec>0)Sec--;break;
+       }
+  }
+  if(ChoosePat==1){
+  switch(key){     
+        case 0: Min++;break;
+        case 1: Month++;break;
+        case 2: if(Month>0)Month--;;break;
+        case 3: if(Min>0)Min--;break;
+       }
+  }
+  if(ChoosePat==2){
+  switch(key){     
+        case 0: Hour++;break;
+        case 1: Year++;break;
+        case 2: if(Year>0)Year--;;break;
+        case 3: if(Hour>0)Hour--;break;
+       }
+  }
+  }
+
+}
+
 void loop(){
-  CircleChara();
+  ShowPat();
+  SetTime();
   timeRun();
+  CircleChara1();
+  
+  digitalWrite(13, LOW);
 }
