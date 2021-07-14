@@ -4,9 +4,9 @@
 
 const int rs = 8, rw = 11, en = 9 , d4 = 4, d5 = 5, d6 = 6, d7 = 7;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
-int Sec=53,Min=59,Hour=23,Day=28,Month=2,Year=2021;  //默认时间2021-2-28 23：59：55
-int i=9,j=0;
-int StaDay=0;
+int Sec=53,Min=59,Hour=23,Day=28,Month=2,Year=2021;  //默认时间2021-2-28 23：59：53
+int i=9,j=0;   //控制滚动字幕速度
+int StaDay=0;  //标准日
 
 int adc_key_val[5]={30,150,360,535,760};   
 int NUM_KEYS=5;
@@ -139,7 +139,7 @@ void timeRun(){
 }
 
 
-void CircleChara1(){
+void CircleChara1(){  //滚动字幕
   if(j%10==0){
   lcd.setCursor(8,1);
   lcd.print("          ");
