@@ -176,7 +176,12 @@ void ShowPat(){
      ChoosePat=0;
   }
   lcd.setCursor(15,0);
-  lcd.print(ChoosePat);
+   switch(ChoosePat){     
+        case 0: lcd.print("A");;break;   //A模式
+        case 1: lcd.print("B");break;    //B模式
+        case 2: lcd.print("C");;break;   //C模式
+        default:break;
+       }
 }
 
 void SetTime(){
