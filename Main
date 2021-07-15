@@ -12,7 +12,7 @@ int adc_key_val[5]={30,150,360,535,760};
 int NUM_KEYS=5;
 int adc_key_in;
 int key=-1;
-int ChoosePat=0;
+int ChoosePat=0;   //模式控制
 
 
 
